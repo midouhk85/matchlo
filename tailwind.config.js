@@ -11,6 +11,9 @@
 module.exports = {
   content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  // Mode sombre piloté par classe (et non 'media') : évite l'erreur NativeWind
+  // « Cannot manually set color scheme » et nous laisse forcer le thème sombre.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -53,14 +56,18 @@ module.exports = {
         semibold: ['Inter_600SemiBold'],
         bold: ['Inter_700Bold'],
       },
+      // ⚠️ Unités px explicites : sur le web NativeWind émet un lineHeight
+      // *sans unité* (= multiplicateur) si on met un nombre, ce qui multiplie
+      // par la taille de police (24 → 24×16 = 384px). Les chaînes 'px' donnent
+      // un rendu identique sur natif et web.
       fontSize: {
-        xs: [12, { lineHeight: 16 }],
-        sm: [14, { lineHeight: 20 }],
-        base: [16, { lineHeight: 24 }],
-        lg: [18, { lineHeight: 26 }],
-        xl: [22, { lineHeight: 30 }],
-        '2xl': [28, { lineHeight: 36 }],
-        '3xl': [34, { lineHeight: 42 }],
+        xs: ['12px', { lineHeight: '16px' }],
+        sm: ['14px', { lineHeight: '20px' }],
+        base: ['16px', { lineHeight: '24px' }],
+        lg: ['18px', { lineHeight: '26px' }],
+        xl: ['22px', { lineHeight: '30px' }],
+        '2xl': ['28px', { lineHeight: '36px' }],
+        '3xl': ['34px', { lineHeight: '42px' }],
       },
     },
   },
