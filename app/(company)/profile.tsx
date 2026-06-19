@@ -1,14 +1,16 @@
 import { View, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
-import { Screen, Heading, Avatar, VerifiedBadge, FullLoader, StatusPill } from '@/components/ui';
+import { Screen, Heading, Avatar, VerifiedBadge, FullLoader, StatusPill, Button } from '@/components/ui';
 import { SettingsSection } from '@/components/Settings';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/store/useSession';
 
 export default function CompanyProfile() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { profile } = useSession();
 
   const company = useQuery({
@@ -58,6 +60,8 @@ export default function CompanyProfile() {
             Gérez vos quotas depuis votre espace web.
           </Text>
         </View>
+
+        <Button label={t('profile.edit')} variant="outline" onPress={() => router.push('/(company)/edit-profile')} />
 
         <SettingsSection />
       </View>

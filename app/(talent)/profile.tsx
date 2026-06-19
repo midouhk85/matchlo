@@ -1,8 +1,9 @@
 import { View, Text } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
-import { Screen, Heading, Avatar, VerifiedBadge, FullLoader } from '@/components/ui';
+import { Screen, Heading, Avatar, VerifiedBadge, FullLoader, Button } from '@/components/ui';
 import { SettingsSection } from '@/components/Settings';
 import { formatDZD } from '@/constants/data';
 import { supabase } from '@/lib/supabase';
@@ -10,6 +11,7 @@ import { useSession } from '@/store/useSession';
 
 export default function TalentProfile() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { profile } = useSession();
 
   const details = useQuery({
@@ -72,6 +74,8 @@ export default function TalentProfile() {
             <Text className="text-fg text-sm">{details.data.bio}</Text>
           </View>
         ) : null}
+
+        <Button label={t('profile.edit')} variant="outline" onPress={() => router.push('/(talent)/edit-profile')} />
 
         <SettingsSection />
       </View>

@@ -32,6 +32,8 @@ export default function TalentLayout() {
         name="profile"
         options={{ title: t('tabs.profile'), tabBarIcon: ({ color }) => <Icon e="👤" color={color} /> }}
       />
+      {/* Écran d'édition : navigable mais absent de la barre d'onglets */}
+      <Tabs.Screen name="edit-profile" options={{ href: null }} />
     </Tabs>
   );
 }

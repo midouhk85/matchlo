@@ -32,6 +32,7 @@ export default function CompanyLayout() {
         name="profile"
         options={{ title: t('tabs.profile'), tabBarIcon: ({ color }) => <Icon e="🏢" color={color} /> }}
       />
+      <Tabs.Screen name="edit-profile" options={{ href: null }} />
     </Tabs>
   );
 }
