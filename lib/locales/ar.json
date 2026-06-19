@@ -34,6 +34,11 @@
     "companyDesc": "انشر الإعلانات واعثر على المواهب",
     "invalidEmail": "بريد غير صالح",
     "invalidCode": "رمز غير صالح",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "6 أحرف على الأقل",
+    "signIn": "تسجيل الدخول",
+    "createAccount": "إنشاء حساب",
+    "checkEmail": "تم إنشاء الحساب. تحقّق من بريدك للتأكيد ثم سجّل الدخول.",
     "signOut": "تسجيل الخروج"
   },
   "onboarding": {

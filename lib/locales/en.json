@@ -34,6 +34,11 @@
     "companyDesc": "Post ads and find talents",
     "invalidEmail": "Invalid email",
     "invalidCode": "Invalid code",
+    "password": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "signIn": "Sign in",
+    "createAccount": "Create an account",
+    "checkEmail": "Account created. Check your email to confirm, then sign in.",
     "signOut": "Sign out"
   },
   "onboarding": {

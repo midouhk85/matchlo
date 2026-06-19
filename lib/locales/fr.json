@@ -34,6 +34,11 @@
     "companyDesc": "Publiez des annonces et trouvez des talents",
     "invalidEmail": "Email invalide",
     "invalidCode": "Code invalide",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Au moins 6 caractères",
+    "signIn": "Se connecter",
+    "createAccount": "Créer un compte",
+    "checkEmail": "Compte créé. Vérifiez votre e-mail pour confirmer, puis connectez-vous.",
     "signOut": "Se déconnecter"
   },
   "onboarding": {
