@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, Pressable, Image, Alert } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
+import { notify } from '@/lib/confirm';
 import { useTranslation } from 'react-i18next';
 
 import { Screen, Heading, Subtitle, Button, TextField, TextArea } from '@/components/ui';
@@ -69,7 +70,7 @@ export default function CompanyOnboarding() {
 
       await refreshProfile();
     } catch (e: any) {
-      Alert.alert(t('common.error'), e.message ?? '');
+      notify(t('common.error'), e.message ?? '');
     } finally {
       setSubmitting(false);
     }

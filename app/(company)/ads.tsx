@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Text, FlatList, Pressable, Modal, ScrollView, Alert, Switch } from 'react-native';
+import { View, Text, FlatList, Pressable, Modal, ScrollView, Switch } from 'react-native';
+import { notify } from '@/lib/confirm';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -150,7 +151,7 @@ function CreateMissionModal({
       reset();
       onCreated();
     } catch (e: any) {
-      Alert.alert(t('common.error'), e.message ?? '');
+      notify(t('common.error'), e.message ?? '');
     } finally {
       setSaving(false);
     }

@@ -1,8 +1,9 @@
-import { View, Text, Pressable, Alert } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LANGS, changeLanguage } from '@/lib/i18n';
 import { Button } from '@/components/ui';
 import { useSession } from '@/store/useSession';
+import { confirmAction } from '@/lib/confirm';
 
 /** Sélecteur de langue (FR/AR/EN) + déconnexion, partagé par les profils. */
 export function SettingsSection() {
@@ -32,10 +33,10 @@ export function SettingsSection() {
         label={t('auth.signOut')}
         variant="outline"
         onPress={() =>
-          Alert.alert(t('auth.signOut'), '', [
-            { text: t('common.cancel'), style: 'cancel' },
-            { text: t('auth.signOut'), style: 'destructive', onPress: () => signOut() },
-          ])
+          confirmAction(t('auth.signOut'), '', () => signOut(), {
+            confirmLabel: t('auth.signOut'),
+            cancelLabel: t('common.cancel'),
+          })
         }
       />
     </View>

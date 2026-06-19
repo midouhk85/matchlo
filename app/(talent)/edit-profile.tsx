@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, Image, Alert } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
+import { notify } from '@/lib/confirm';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -112,7 +113,7 @@ export default function EditTalentProfile() {
       qc.invalidateQueries({ queryKey: ['talentDetails', userId] });
       router.back();
     } catch (e: any) {
-      Alert.alert(t('common.error'), e.message ?? '');
+      notify(t('common.error'), e.message ?? '');
     } finally {
       setSaving(false);
     }
