@@ -196,7 +196,10 @@
     "needCamera": "Autoriser la caméra",
     "report": "Signaler",
     "block": "Bloquer",
-    "blocked": "Interlocuteur bloqué"
+    "blocked": "Interlocuteur bloqué",
+    "escrowFunded": "Paiement sécurisé sous séquestre",
+    "escrowFundedDesc": "Le montant est déposé par l'entreprise. Il vous sera libéré automatiquement à la validation du livrable.",
+    "escrowReleased": "Séquestre libéré en votre faveur"
   },
   "rating": {
     "title": "Évaluer",

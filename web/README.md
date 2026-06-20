@@ -51,6 +51,14 @@ Sans `CHARGILY_SECRET_KEY`, la page `/company/billing` fonctionne en **mode dém
 fonction à retirer en production). Webhook à enregistrer dans le dashboard Chargily :
 `https://<projet>.supabase.co/functions/v1/chargily-webhook`.
 
+### Escrow influenceur (Phase 5)
+La fonction `escrow-checkout` dépose le montant d'une mission influenceur sous
+séquestre ; le webhook (`fund_escrow`) débloque l'engagement (`in_progress`) ; un
+trigger libère automatiquement le séquestre à la clôture (`completed`). En mode démo,
+le dépôt se simule via `dev_confirm_escrow` (⚠️ à retirer en production, comme
+`dev_confirm_payment`). La console admin agrège revenus, volume de séquestre et taux
+de complétion (section Analytics).
+
 ## Build
 ```bash
 npm run build && npm start

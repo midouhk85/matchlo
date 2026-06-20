@@ -20,6 +20,7 @@ function AdminConsole() {
   const [verifs, setVerifs] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -69,6 +70,27 @@ function AdminConsole() {
       .order("created_at", { ascending: false });
     setCompanies(co ?? []);
 
+    // ── Analytics ──
+    const [{ data: paid }, { data: esc }, { data: engs }, { data: miss }] = await Promise.all([
+      supabase.from("payments").select("amount_dzd").eq("status", "paid"),
+      supabase.from("escrows").select("amount_dzd, status"),
+      supabase.from("engagements").select("status"),
+      supabase.from("missions").select("mission_type"),
+    ]);
+    const sum = (rows: any[] | null, key: string) => (rows ?? []).reduce((a, r) => a + (r[key] ?? 0), 0);
+    const countBy = (rows: any[] | null, key: string) =>
+      (rows ?? []).reduce((acc: Record<string, number>, r) => ((acc[r[key]] = (acc[r[key]] ?? 0) + 1), acc), {});
+    const engByStatus = countBy(engs, "status");
+    const totalEng = (engs ?? []).length;
+    setAnalytics({
+      revenue: sum(paid, "amount_dzd"),
+      escrowVolume: sum((esc ?? []).filter((e: any) => e.status === "funded" || e.status === "released"), "amount_dzd"),
+      escrowReleased: sum((esc ?? []).filter((e: any) => e.status === "released"), "amount_dzd"),
+      completionRate: totalEng ? Math.round(((engByStatus["completed"] ?? 0) / totalEng) * 100) : 0,
+      missionsByType: countBy(miss, "mission_type"),
+      engByStatus,
+    });
+
     setLoading(false);
   }, []);
 
@@ -113,6 +135,29 @@ function AdminConsole() {
           <StatCard label="Vérifs en attente" value={stats.pendingVerifs ?? 0} />
           <StatCard label="Signalements" value={stats.openReports ?? 0} />
         </section>
+
+        {/* Analytics (Phase 5) */}
+        {analytics && (
+          <section className="flex flex-col gap-4">
+            <h2 className="font-bold text-lg">Analytics</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Revenu quotas (DA)" value={analytics.revenue.toLocaleString("fr-DZ")} />
+              <StatCard label="Séquestre actif (DA)" value={analytics.escrowVolume.toLocaleString("fr-DZ")} />
+              <StatCard label="Séquestre libéré (DA)" value={analytics.escrowReleased.toLocaleString("fr-DZ")} />
+              <StatCard label="Taux de complétion" value={`${analytics.completionRate}%`} />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Card>
+                <div className="font-semibold mb-3">Missions par type</div>
+                <Bars data={analytics.missionsByType} labels={{ onsite: "Présentiel", influencer: "Influenceur" }} />
+              </Card>
+              <Card>
+                <div className="font-semibold mb-3">Missions par statut</div>
+                <Bars data={analytics.engByStatus} />
+              </Card>
+            </div>
+          </section>
+        )}
 
         {loading ? (
           <p className="text-muted">Chargement…</p>
@@ -212,6 +257,25 @@ function AdminConsole() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function Bars({ data, labels }: { data: Record<string, number>; labels?: Record<string, string> }) {
+  const entries = Object.entries(data ?? {});
+  const max = Math.max(1, ...entries.map(([, v]) => v));
+  if (entries.length === 0) return <p className="text-muted text-sm">Aucune donnée.</p>;
+  return (
+    <div className="flex flex-col gap-2">
+      {entries.map(([k, v]) => (
+        <div key={k} className="flex items-center gap-3">
+          <span className="text-muted text-xs w-28 shrink-0 capitalize">{labels?.[k] ?? k}</span>
+          <div className="flex-1 h-5 bg-surfacealt rounded-[6px] overflow-hidden">
+            <div className="h-full bg-primary rounded-[6px]" style={{ width: `${(v / max) * 100}%` }} />
+          </div>
+          <span className="text-fg text-sm w-6 text-right">{v}</span>
+        </div>
+      ))}
     </div>
   );
 }

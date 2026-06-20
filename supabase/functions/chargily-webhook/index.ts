@@ -23,15 +23,12 @@ Deno.serve(async (req) => {
   if (event?.type === "checkout.paid") {
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const checkoutId = event.data?.id as string | undefined;
-    const metaPaymentId = Array.isArray(event.data?.metadata)
-      ? event.data.metadata[0]?.payment_id
-      : event.data?.metadata?.payment_id;
+    const meta = Array.isArray(event.data?.metadata) ? event.data.metadata[0] : event.data?.metadata;
 
-    // Retrouve le paiement par checkout_id, sinon par metadata
-    let q = admin.from("payments").select("*").eq("status", "pending");
-    q = checkoutId ? q.eq("checkout_id", checkoutId) : q.eq("id", metaPaymentId);
-    const { data: payment } = await q.maybeSingle();
-
+    // 1) Paiement de quota (packs)
+    let pq = admin.from("payments").select("*").eq("status", "pending");
+    pq = checkoutId ? pq.eq("checkout_id", checkoutId) : pq.eq("id", meta?.payment_id);
+    const { data: payment } = await pq.maybeSingle();
     if (payment) {
       await admin.from("payments").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", payment.id);
       await admin.rpc("credit_company_quota", {
@@ -39,6 +36,15 @@ Deno.serve(async (req) => {
         p_type: payment.quota_type,
         p_amount: payment.quota_amount,
       });
+      return new Response("ok", { status: 200 });
+    }
+
+    // 2) Financement d'un séquestre (escrow influenceur)
+    let eq = admin.from("escrows").select("id").eq("status", "pending");
+    eq = checkoutId ? eq.eq("checkout_id", checkoutId) : eq.eq("id", meta?.escrow_id);
+    const { data: escrow } = await eq.maybeSingle();
+    if (escrow) {
+      await admin.rpc("fund_escrow", { p_escrow_id: escrow.id });
     }
   }
 

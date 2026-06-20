@@ -18,6 +18,36 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["blocks"]["Insert"]>
         Relationships: []
       }
+      escrows: {
+        Row: {
+          id: string
+          engagement_id: string
+          company_id: string
+          talent_id: string
+          amount_dzd: number
+          provider: string
+          checkout_id: string | null
+          status: string
+          created_at: string | null
+          funded_at: string | null
+          released_at: string | null
+        }
+        Insert: {
+          id?: string
+          engagement_id: string
+          company_id: string
+          talent_id: string
+          amount_dzd: number
+          provider?: string
+          checkout_id?: string | null
+          status?: string
+          created_at?: string | null
+          funded_at?: string | null
+          released_at?: string | null
+        }
+        Update: Partial<Database["public"]["Tables"]["escrows"]["Insert"]>
+        Relationships: []
+      }
       company_profiles: {
         Row: {
           description: string | null
@@ -353,6 +383,7 @@ export type Database = {
           deliverable_types: string[]
           rating_avg: number
           rating_count: number
+          rank_score: number
         }[]
       }
       check_in: { Args: { p_engagement_id: string; p_token: string }; Returns: Json }

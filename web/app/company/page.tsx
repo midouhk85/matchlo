@@ -16,6 +16,9 @@ function CompanyDashboard() {
   const [company, setCompany] = useState<any>(null);
   const [missions, setMissions] = useState<any[]>([]);
   const [engagements, setEngagements] = useState<any[]>([]);
+  const [escrows, setEscrows] = useState<Record<string, any>>({});
+  const [escrowBusy, setEscrowBusy] = useState<string | null>(null);
+  const [escrowDemo, setEscrowDemo] = useState<{ id: string; amount: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
@@ -31,16 +34,40 @@ function CompanyDashboard() {
     setMissions(m ?? []);
     const { data: e } = await supabase
       .from("engagements")
-      .select("*, match:matches!inner(company_id, mission:missions(title), talent:profiles!matches_talent_id_fkey(full_name))")
+      .select("*, match:matches!inner(company_id, mission:missions(title, mission_type), talent:profiles!matches_talent_id_fkey(full_name))")
       .eq("match.company_id", profile.id)
       .order("created_at", { ascending: false });
     setEngagements(e ?? []);
+    const { data: esc } = await supabase.from("escrows").select("*").eq("company_id", profile.id);
+    setEscrows(Object.fromEntries((esc ?? []).map((x: any) => [x.engagement_id, x])));
     setLoading(false);
   }, [profile]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  async function fundEscrow(engagementId: string) {
+    setEscrowBusy(engagementId);
+    setEscrowDemo(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("escrow-checkout", { body: { engagementId } });
+      if (error) throw error;
+      if (data?.checkout_url) window.location.href = data.checkout_url;
+      else if (data?.demo) setEscrowDemo({ id: data.escrow_id, amount: data.amount });
+      else load();
+    } finally {
+      setEscrowBusy(null);
+    }
+  }
+  async function simulateEscrow() {
+    if (!escrowDemo) return;
+    setEscrowBusy("sim");
+    await supabase.rpc("dev_confirm_escrow", { p_escrow_id: escrowDemo.id });
+    setEscrowDemo(null);
+    setEscrowBusy(null);
+    load();
+  }
 
   const matchableMissions = missions.length;
 
@@ -106,21 +133,47 @@ function CompanyDashboard() {
         {/* Missions / engagements */}
         <section className="flex flex-col gap-3">
           <h2 className="font-bold text-lg">Suivi des missions</h2>
+
+          {escrowDemo && (
+            <div className="bg-warning/15 border border-warning/40 rounded-card p-4 flex items-center justify-between gap-3">
+              <span className="text-sm">
+                Mode démo — séquestre de {escrowDemo.amount.toLocaleString("fr-DZ")} DA. Simuler le dépôt ?
+              </span>
+              <Button variant="success" onClick={simulateEscrow} disabled={escrowBusy === "sim"}>
+                {escrowBusy === "sim" ? "…" : "Simuler le dépôt"}
+              </Button>
+            </div>
+          )}
+
           {engagements.length === 0 ? (
             <p className="text-muted text-sm">Aucune mission engagée.</p>
           ) : (
             <div className="flex flex-col gap-3">
-              {engagements.map((e) => (
-                <Card key={e.id} className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">{e.match?.mission?.title}</div>
-                    <div className="text-muted text-sm">{e.match?.talent?.full_name}</div>
-                  </div>
-                  <Pill color={e.status === "completed" ? "success" : e.status === "disputed" ? "danger" : "primary"}>
-                    {e.status}
-                  </Pill>
-                </Card>
-              ))}
+              {engagements.map((e) => {
+                const esc = escrows[e.id];
+                const isInfluencer = e.match?.mission?.mission_type === "influencer";
+                const canFund = isInfluencer && e.status === "awaiting_payment" && (!esc || esc.status === "pending");
+                return (
+                  <Card key={e.id} className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{e.match?.mission?.title}</div>
+                      <div className="text-muted text-sm">{e.match?.talent?.full_name}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {esc?.status === "funded" && <Pill color="secondary">🔒 séquestre financé</Pill>}
+                      {esc?.status === "released" && <Pill color="success">séquestre libéré</Pill>}
+                      {canFund && (
+                        <Button onClick={() => fundEscrow(e.id)} disabled={escrowBusy === e.id}>
+                          {escrowBusy === e.id ? "…" : "🔒 Sécuriser le paiement"}
+                        </Button>
+                      )}
+                      <Pill color={e.status === "completed" ? "success" : e.status === "disputed" ? "danger" : "primary"}>
+                        {e.status}
+                      </Pill>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>

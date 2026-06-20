@@ -69,7 +69,12 @@ export default function EngagementScreen() {
         .eq('engagement_id', eng?.id ?? '00000000-0000-0000-0000-000000000000')
         .eq('rater_id', profile!.id)
         .maybeSingle();
-      return { match: match as any, eng, alreadyRated: !!rating };
+      const { data: escrow } = await supabase
+        .from('escrows')
+        .select('status, amount_dzd')
+        .eq('engagement_id', eng?.id ?? '00000000-0000-0000-0000-000000000000')
+        .maybeSingle();
+      return { match: match as any, eng, alreadyRated: !!rating, escrow };
     },
   });
 
@@ -135,7 +140,7 @@ export default function EngagementScreen() {
   }
 
   if (q.isLoading || !q.data) return <FullLoader light />;
-  const { match, eng, alreadyRated } = q.data;
+  const { match, eng, alreadyRated, escrow } = q.data;
   const mission = match.mission;
   const isInfluencer = mission?.mission_type === 'influencer';
   const isTalent = role === 'talent';
@@ -175,6 +180,13 @@ export default function EngagementScreen() {
               <View className="bg-[#EEF2FF] rounded-card p-4">
                 <Text className="text-ink text-sm">{t('engagement.paymentNeutral')}</Text>
               </View>
+            ) : null}
+
+            {/* Statut du séquestre (escrow influenceur, §Phase 5) */}
+            {escrow?.status === 'funded' ? (
+              <Banner emoji="🔒" title={t('engagement.escrowFunded')} desc={t('engagement.escrowFundedDesc')} />
+            ) : escrow?.status === 'released' ? (
+              <Banner emoji="✅" title={t('engagement.escrowReleased')} />
             ) : null}
 
             {/* Étapes du flux influenceur */}

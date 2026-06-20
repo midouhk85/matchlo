@@ -196,7 +196,10 @@
     "needCamera": "Allow camera",
     "report": "Report",
     "block": "Block",
-    "blocked": "User blocked"
+    "blocked": "User blocked",
+    "escrowFunded": "Payment secured in escrow",
+    "escrowFundedDesc": "The amount is deposited by the company. It will be released to you automatically when the deliverable is validated.",
+    "escrowReleased": "Escrow released to you"
   },
   "rating": {
     "title": "Rate",
