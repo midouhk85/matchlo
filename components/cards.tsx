@@ -154,6 +154,7 @@ export function TalentCard({ talent, overlay }: { talent: any; overlay?: { x: an
             ) : null}
             <View className="flex-row flex-wrap gap-2 mt-1">
               <Pill text={`📍 ${talent.wilaya ?? '—'}`} />
+              {talent.rating_count > 0 ? <Pill text={`⭐ ${talent.rating_avg} (${talent.rating_count})`} /> : null}
               <Pill text={`👥 ${formatFollowers(totalFollowers)} abonnés`} />
               <Pill text={`💰 ${formatDZD(talent.rate_per_post_dzd)} / post`} />
             </View>
@@ -161,8 +162,9 @@ export function TalentCard({ talent, overlay }: { talent: any; overlay?: { x: an
         ) : (
           <View className="flex-row flex-wrap gap-2 mt-1">
             <Pill text={`📍 ${talent.wilaya ?? '—'}`} />
+            {talent.rating_count > 0 ? <Pill text={`⭐ ${talent.rating_avg} (${talent.rating_count})`} /> : null}
             {talent.distance_km != null ? <Pill text={`${talent.distance_km} km`} /> : null}
-            {talent.experience_years != null ? <Pill text={`⭐ ${talent.experience_years} ans`} /> : null}
+            {talent.experience_years != null ? <Pill text={`${talent.experience_years} ans`} /> : null}
             <Pill text={`💰 ${formatDZD(talent.daily_rate_dzd)}`} />
           </View>
         )}

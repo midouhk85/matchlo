@@ -181,7 +181,19 @@
     "disputeQ": "Ouvrir un litige sur cette mission ? Un administrateur l'examinera.",
     "disputeOpened": "Litige ouvert. Un administrateur va examiner.",
     "disputed": "Litige en cours",
-    "openChat": "Ouvrir la discussion"
+    "openChat": "Ouvrir la discussion",
+    "showQR": "Afficher mon QR de présence",
+    "qrHint": "Présentez ce code à l'entreprise sur place pour confirmer votre présence.",
+    "scanQR": "Scanner le QR de présence",
+    "scanHint": "Scannez le QR du talent pour confirmer sa présence.",
+    "presenceConfirmed": "Présence confirmée ✅",
+    "completeMission": "Clôturer la mission",
+    "qrInvalid": "QR invalide ou expiré.",
+    "manualToken": "Ou saisir le code manuellement",
+    "needCamera": "Autoriser la caméra",
+    "report": "Signaler",
+    "block": "Bloquer",
+    "blocked": "Interlocuteur bloqué"
   },
   "rating": {
     "title": "Évaluer",

@@ -67,6 +67,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         photosPermission: 'Matchlo a besoin de vos photos pour créer votre profil.',
       },
     ],
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Matchlo utilise la caméra pour scanner le QR de présence.',
+      },
+    ],
   ],
   extra: {
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,

@@ -48,6 +48,15 @@ function CompanyDashboard() {
     <div>
       <TopBar title="Espace entreprise" role="company" />
       <div className="max-w-6xl mx-auto px-5 py-8 flex flex-col gap-8">
+        {!profile?.is_verified && (
+          <div className="bg-warning/15 border border-warning/40 rounded-card p-4 text-sm">
+            <span className="font-semibold text-warning">Vérification requise.</span>{" "}
+            <span className="text-muted">
+              Votre entreprise est {profile?.verification_status === "rejected" ? "rejetée" : "en attente de vérification"} (RC/NIF).
+              La publication d&apos;annonces est débloquée une fois votre entreprise vérifiée par l&apos;administration.
+            </span>
+          </div>
+        )}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard label="Annonces" value={matchableMissions} />
           <StatCard label="Missions en cours" value={engagements.length} />
@@ -59,10 +68,14 @@ function CompanyDashboard() {
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-lg">Mes annonces</h2>
-            <Button onClick={() => setShowForm((s) => !s)}>{showForm ? "Fermer" : "＋ Nouvelle annonce"}</Button>
+            {profile?.is_verified && (
+              <Button onClick={() => setShowForm((s) => !s)}>{showForm ? "Fermer" : "＋ Nouvelle annonce"}</Button>
+            )}
           </div>
 
-          {showForm && <CreateMission companyId={profile!.id} onCreated={() => { setShowForm(false); load(); }} />}
+          {showForm && profile?.is_verified && (
+            <CreateMission companyId={profile.id} onCreated={() => { setShowForm(false); load(); }} />
+          )}
 
           {loading ? (
             <p className="text-muted">Chargement…</p>

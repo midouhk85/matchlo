@@ -11,6 +11,7 @@ import { formatDZD } from '@/constants/data';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/store/useSession';
 import { confirmAction, notify } from '@/lib/confirm';
+import { QRDisplayModal, ScannerModal } from '@/components/QRCheckIn';
 
 /**
  * Écran d'engagement — pilote le flux « double feu vert » influenceur (§5) :
@@ -29,6 +30,28 @@ export default function EngagementScreen() {
   const [deliverableOpen, setDeliverableOpen] = useState(false);
   const [link, setLink] = useState('');
   const [rateOpen, setRateOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+
+  async function doCheckIn(token: string) {
+    if (!q.data?.eng) return;
+    setScanOpen(false);
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.rpc('check_in', { p_engagement_id: q.data.eng.id, p_token: token });
+      if (error) throw error;
+      if ((data as any)?.ok) {
+        await qc.invalidateQueries({ queryKey: ['engagement', matchId] });
+        notify(t('engagement.presenceConfirmed'));
+      } else {
+        notify(t('engagement.qrInvalid'));
+      }
+    } catch (e: any) {
+      notify(t('common.error'), e.message ?? '');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const q = useQuery({
     queryKey: ['engagement', matchId],
@@ -212,6 +235,29 @@ export default function EngagementScreen() {
 
             {st === 'disputed' ? <Banner emoji="⚠️" title={t('engagement.disputed')} /> : null}
 
+            {/* Flux présentiel : QR de présence + check-in (§C) */}
+            {!isInfluencer && st === 'proposed' ? (
+              isTalent ? (
+                <Action label={t('engagement.showQR')} color={COLORS.primary} busy={busy} onPress={() => setQrOpen(true)} />
+              ) : (
+                <Action label={t('engagement.scanQR')} color={COLORS.primary} busy={busy} onPress={() => setScanOpen(true)} />
+              )
+            ) : null}
+
+            {!isInfluencer && st === 'presence_confirmed' ? (
+              <View className="gap-3">
+                <Banner emoji="✅" title={t('engagement.presenceConfirmed')} />
+                {!isTalent ? (
+                  <Action
+                    label={t('engagement.completeMission')}
+                    color={COLORS.success}
+                    busy={busy}
+                    onPress={() => confirmAction(t('engagement.completeMission'), '', () => patchEngagement({ status: 'completed' }))}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+
             {/* Discussion */}
             <Pressable onPress={() => router.replace(`/chat/${match.id}`)} className="bg-light-surface rounded-card p-4 flex-row items-center justify-between">
               <Text className="text-ink font-medium">💬 {t('engagement.openChat')}</Text>
@@ -261,6 +307,12 @@ export default function EngagementScreen() {
 
       {/* Modale évaluation */}
       <RatingModal visible={rateOpen} onClose={() => setRateOpen(false)} onSubmit={submitRating} busy={busy} t={t} />
+
+      {/* QR de présence (talent) / scanner (entreprise) */}
+      {eng?.presence_qr ? (
+        <QRDisplayModal visible={qrOpen} token={eng.presence_qr} onClose={() => setQrOpen(false)} />
+      ) : null}
+      <ScannerModal visible={scanOpen} onClose={() => setScanOpen(false)} onToken={doCheckIn} />
     </SafeAreaView>
   );
 }

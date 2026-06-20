@@ -19,6 +19,7 @@ function AdminConsole() {
   const [missions, setMissions] = useState<any[]>([]);
   const [verifs, setVerifs] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -60,6 +61,14 @@ function AdminConsole() {
       .order("created_at", { ascending: false });
     setReports(r ?? []);
 
+    const { data: co } = await supabase
+      .from("profiles")
+      .select("id, full_name, verification_status, company:company_profiles!company_profiles_profile_id_fkey(rc_number, nif, sector)")
+      .eq("role", "company")
+      .eq("verification_status", "pending")
+      .order("created_at", { ascending: false });
+    setCompanies(co ?? []);
+
     setLoading(false);
   }, []);
 
@@ -83,6 +92,13 @@ function AdminConsole() {
     await supabase.from("reports").update({ status }).eq("id", id);
     load();
   }
+  async function moderateCompany(id: string, status: "verified" | "rejected") {
+    await supabase
+      .from("profiles")
+      .update({ verification_status: status, is_verified: status === "verified" })
+      .eq("id", id);
+    load();
+  }
 
   return (
     <div>
@@ -102,6 +118,28 @@ function AdminConsole() {
           <p className="text-muted">Chargement…</p>
         ) : (
           <>
+            {/* File : vérification des entreprises (RC/NIF) — requise pour publier */}
+            <Queue title="Entreprises à vérifier" empty="Aucune entreprise en attente." count={companies.length}>
+              {companies.map((c) => (
+                <Card key={c.id} className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-semibold">{c.full_name}</div>
+                    <div className="text-muted text-sm">
+                      {c.company?.sector} · RC {c.company?.rc_number} · NIF {c.company?.nif}
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button variant="success" onClick={() => moderateCompany(c.id, "verified")}>
+                      Vérifier
+                    </Button>
+                    <Button variant="outline" onClick={() => moderateCompany(c.id, "rejected")}>
+                      Rejeter
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </Queue>
+
             {/* File : missions influenceur à modérer (feu vert 1) */}
             <Queue title="Missions influenceur à valider" empty="Aucune mission en attente." count={missions.length}>
               {missions.map((m) => (

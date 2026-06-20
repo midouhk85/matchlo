@@ -36,6 +36,16 @@ export default function TalentProfile() {
     },
   });
 
+  // Note moyenne reçue (évaluations bidirectionnelles, §B)
+  const rating = useQuery({
+    queryKey: ['talentRating', profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc('profile_rating', { p_id: profile!.id });
+      return data?.[0] ?? { rating_avg: null, rating_count: 0 };
+    },
+  });
+
   if (!profile) return <FullLoader />;
 
   return (
@@ -53,8 +63,11 @@ export default function TalentProfile() {
 
         {/* Statistiques */}
         <View className="flex-row gap-3">
+          <Stat
+            label={t('rating.title')}
+            value={rating.data?.rating_count ? `⭐ ${rating.data.rating_avg}` : '—'}
+          />
           <Stat label={t('matches.title')} value={String(matchCount.data ?? 0)} />
-          <Stat label={t('deck.years')} value={String(details.data?.experience_years ?? '—')} />
           <Stat label={t('onboarding.dailyRate')} value={formatDZD(details.data?.daily_rate_dzd)} />
         </View>
 

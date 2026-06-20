@@ -181,7 +181,19 @@
     "disputeQ": "Open a dispute on this mission? An admin will review it.",
     "disputeOpened": "Dispute opened. An admin will review it.",
     "disputed": "Dispute in progress",
-    "openChat": "Open chat"
+    "openChat": "Open chat",
+    "showQR": "Show my presence QR",
+    "qrHint": "Show this code to the company on site to confirm your presence.",
+    "scanQR": "Scan presence QR",
+    "scanHint": "Scan the talent's QR to confirm their presence.",
+    "presenceConfirmed": "Presence confirmed ✅",
+    "completeMission": "Close the mission",
+    "qrInvalid": "Invalid or expired QR.",
+    "manualToken": "Or enter the code manually",
+    "needCamera": "Allow camera",
+    "report": "Report",
+    "block": "Block",
+    "blocked": "User blocked"
   },
   "rating": {
     "title": "Rate",

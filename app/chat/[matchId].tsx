@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
 import { Avatar, FullLoader, VerifiedBadge } from '@/components/ui';
+import { ReportSheet } from '@/components/ReportSheet';
 import { COLORS } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/store/useSession';
@@ -30,6 +31,7 @@ export default function Chat() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
+  const [reportOpen, setReportOpen] = useState(false);
   const listRef = useRef<FlatList>(null);
 
   // Métadonnées du match (interlocuteur, gate de modération, titre mission)
@@ -126,7 +128,23 @@ export default function Chat() {
         >
           <Text style={{ fontSize: 18 }}>📋</Text>
         </Pressable>
+        {/* Signaler / bloquer */}
+        <Pressable
+          onPress={() => setReportOpen(true)}
+          className="w-10 h-10 rounded-pill items-center justify-center bg-light-bg ml-1"
+        >
+          <Text style={{ fontSize: 18, color: COLORS.inkMuted }}>⋯</Text>
+        </Pressable>
       </View>
+
+      {other?.id ? (
+        <ReportSheet
+          visible={reportOpen}
+          targetId={other.id}
+          onClose={() => setReportOpen(false)}
+          onBlocked={() => router.back()}
+        />
+      ) : null}
 
       {locked ? (
         <View className="flex-1 items-center justify-center px-8 gap-2">

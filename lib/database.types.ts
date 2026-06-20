@@ -12,6 +12,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocks: {
+        Row: { blocker_id: string; blocked_id: string; created_at: string | null }
+        Insert: { blocker_id: string; blocked_id: string; created_at?: string | null }
+        Update: Partial<Database["public"]["Tables"]["blocks"]["Insert"]>
+        Relationships: []
+      }
       company_profiles: {
         Row: {
           description: string | null
@@ -345,7 +351,14 @@ export type Database = {
           social_handles: Json
           rate_per_post_dzd: number
           deliverable_types: string[]
+          rating_avg: number
+          rating_count: number
         }[]
+      }
+      check_in: { Args: { p_engagement_id: string; p_token: string }; Returns: Json }
+      profile_rating: {
+        Args: { p_id: string }
+        Returns: { rating_avg: number; rating_count: number }[]
       }
       get_talent_deck: {
         Args: { p_radius_km?: number; p_wilaya?: string }

@@ -49,6 +49,15 @@ export const SECTORS = [
 // Rayons proposés pour le filtre géographique (en km)
 export const RADIUS_OPTIONS = [10, 25, 50, 100] as const;
 
+// Motifs de signalement (§4 ⑪)
+export const REPORT_REASONS = [
+  'Contenu inapproprié',
+  'Faux profil',
+  'Harcèlement',
+  'Arnaque / fraude',
+  'Autre',
+] as const;
+
 // Dégradés repérés sur les maquettes (avatars/cartes/écran match)
 export const GRADIENTS: [string, string][] = [
   ['#5B8DEF', '#3FD0C9'], // bleu-teal
