@@ -180,7 +180,12 @@ function CreateMissionModal({
       reset();
       onCreated();
     } catch (e: any) {
-      notify(t('common.error'), e.message ?? '');
+      // Quota d'annonces urgentes épuisé → rechargement sur le web (§6.1)
+      if (typeof e?.message === 'string' && e.message.includes('quota_urgent')) {
+        notify(t('billing.urgentQuotaEmpty'));
+      } else {
+        notify(t('common.error'), e.message ?? '');
+      }
     } finally {
       setSaving(false);
     }

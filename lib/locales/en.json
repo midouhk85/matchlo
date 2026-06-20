@@ -148,6 +148,9 @@
     "briefPlaceholder": "Describe the campaign, message, expected tone…",
     "deadline": "Delivery deadline"
   },
+  "billing": {
+    "urgentQuotaEmpty": "No urgent-ad quota left. Top up from the company space on the web (matchlo.com)."
+  },
   "verify": {
     "title": "Identity verification",
     "uploadDoc": "Upload my ID document",

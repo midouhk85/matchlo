@@ -125,11 +125,14 @@ function CompanyDashboard() {
           )}
         </section>
 
-        {/* Quotas — provisionnés par l'admin (conformité §6.1 : pas de vente côté mobile) */}
+        {/* Quotas — rechargeables sur le web (Chargily), §6.1 : aucune vente côté mobile */}
         <section>
-          <Card className="text-sm text-muted">
-            Les quotas (annonces urgentes, messages directs sans match) se gèrent ici, sur le web.
-            Au lancement, ils sont provisionnés manuellement par l&apos;administration.
+          <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-sm text-muted">
+              Rechargez vos annonces urgentes et contacts directs (paiement Chargily). L&apos;app
+              mobile reste gratuite.
+            </span>
+            <Button href="/company/billing">💳 Recharger mes quotas</Button>
           </Card>
         </section>
       </div>

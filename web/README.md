@@ -37,6 +37,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xxx
 - `test2@matchlo.app` → espace entreprise
 - `inf@matchlo.app` / `test1@matchlo.app` → espace talent
 
+## Monétisation (Chargily Pay) — Phase 4
+Le paiement se fait **uniquement sur le web** (l'app mobile reste gratuite, §6.1).
+Deux Edge Functions Supabase gèrent le flux : `chargily-checkout` (crée le checkout)
+et `chargily-webhook` (crédite les quotas après paiement).
+
+Pour activer le vrai paiement, définir les secrets côté Supabase :
+```bash
+supabase secrets set CHARGILY_SECRET_KEY=live_xxx WEB_BASE_URL=https://votre-domaine.com
+```
+Sans `CHARGILY_SECRET_KEY`, la page `/company/billing` fonctionne en **mode démo**
+(bouton « Simuler le paiement » → crédite les quotas via `dev_confirm_payment`,
+fonction à retirer en production). Webhook à enregistrer dans le dashboard Chargily :
+`https://<projet>.supabase.co/functions/v1/chargily-webhook`.
+
 ## Build
 ```bash
 npm run build && npm start

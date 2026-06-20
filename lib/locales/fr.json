@@ -148,6 +148,9 @@
     "briefPlaceholder": "Décrivez la campagne, le message, le ton attendu…",
     "deadline": "Date limite de livraison"
   },
+  "billing": {
+    "urgentQuotaEmpty": "Plus de quota d'annonces urgentes. Rechargez depuis l'espace entreprise sur le web (matchlo.com)."
+  },
   "verify": {
     "title": "Vérification d'identité",
     "uploadDoc": "Téléverser ma pièce d'identité",
