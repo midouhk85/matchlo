@@ -1,9 +1,9 @@
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
-import { Screen, Heading, Avatar, VerifiedBadge, FullLoader, Button } from '@/components/ui';
+import { Screen, Heading, Avatar, VerifiedBadge, FullLoader, Button, StatusPill } from '@/components/ui';
 import { SettingsSection } from '@/components/Settings';
 import { formatDZD } from '@/constants/data';
 import { supabase } from '@/lib/supabase';
@@ -58,15 +58,23 @@ export default function TalentProfile() {
           <Stat label={t('onboarding.dailyRate')} value={formatDZD(details.data?.daily_rate_dzd)} />
         </View>
 
-        {/* Incitation à la vérification (badge bleu) — non bloquante, Phase 3 */}
+        {/* Incitation à la vérification (badge bleu) — non bloquante */}
         {!profile.is_verified ? (
-          <View className="bg-surface rounded-card p-4 gap-2 border border-primary/40">
+          <Pressable
+            onPress={() => router.push('/verify')}
+            className="bg-surface rounded-card p-4 gap-2 border border-primary/40 active:opacity-80"
+          >
             <View className="flex-row items-center gap-2">
               <VerifiedBadge size={18} />
               <Text className="text-fg font-semibold text-base">{t('onboarding.verifyPrompt')}</Text>
+              {profile.verification_status === 'pending' ? (
+                <View className="ml-auto"><StatusPill label={t('verify.pending')} color="warning" /></View>
+              ) : (
+                <Text className="ml-auto text-primary">›</Text>
+              )}
             </View>
             <Text className="text-muted text-sm">{t('onboarding.verifyDesc')}</Text>
-          </View>
+          </Pressable>
         ) : null}
 
         {details.data?.bio ? (

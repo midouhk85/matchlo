@@ -1,4 +1,5 @@
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 
@@ -21,6 +22,7 @@ const STATUS_COLOR: Record<string, any> = {
 /** « Mes missions » côté talent : engagements issus des matchs, avec statut. */
 export default function TalentMissions() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { profile } = useSession();
 
   const engagements = useQuery({
@@ -30,7 +32,7 @@ export default function TalentMissions() {
       const { data, error } = await supabase
         .from('engagements')
         .select(
-          '*, match:matches!inner(talent_id, mission:missions(title, event_type, start_date, pay_dzd, wilaya), company:profiles!matches_company_id_fkey(full_name))',
+          '*, match:matches!inner(id, talent_id, mission:missions(title, event_type, start_date, pay_dzd, wilaya), company:profiles!matches_company_id_fkey(full_name))',
         )
         .eq('match.talent_id', profile!.id)
         .order('created_at', { ascending: false });
@@ -53,7 +55,10 @@ export default function TalentMissions() {
           keyExtractor={(e: any) => e.id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20, gap: 12 }}
           renderItem={({ item }: { item: any }) => (
-            <View className="bg-surface rounded-card p-4 gap-2 border border-border">
+            <Pressable
+              onPress={() => item.match?.id && router.push(`/engagement/${item.match.id}`)}
+              className="bg-surface rounded-card p-4 gap-2 border border-border active:opacity-80"
+            >
               <View className="flex-row items-center justify-between">
                 <Text className="text-fg font-semibold text-base flex-1" numberOfLines={1}>
                   {item.match?.mission?.title ?? '—'}
@@ -68,7 +73,7 @@ export default function TalentMissions() {
                   <Text className="text-muted text-xs">📅 {item.match.mission.start_date}</Text>
                 ) : null}
               </View>
-            </View>
+            </Pressable>
           )}
         />
       ) : (

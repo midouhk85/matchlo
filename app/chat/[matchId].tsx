@@ -119,6 +119,13 @@ export default function Chat() {
             {match.data?.mission?.title ?? ''}
           </Text>
         </View>
+        {/* Accès à la fiche mission / engagement (flux double feu vert) */}
+        <Pressable
+          onPress={() => router.push(`/engagement/${String(matchId)}`)}
+          className="w-10 h-10 rounded-pill items-center justify-center bg-light-bg"
+        >
+          <Text style={{ fontSize: 18 }}>📋</Text>
+        </Pressable>
       </View>
 
       {locked ? (

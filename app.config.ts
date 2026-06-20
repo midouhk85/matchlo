@@ -75,6 +75,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     eas: {},
   },
   experiments: {
-    typedRoutes: true,
+    typedRoutes: false,
   },
 });

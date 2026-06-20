@@ -36,24 +36,23 @@ export default function TalentType() {
             </View>
           </Pressable>
 
-          {/* Influenceur — Phase 2 */}
-          <View className="bg-surface rounded-card p-5 flex-row items-center gap-4 border border-border opacity-50">
-            <LinearGradient
-              colors={['#7C5CFF', '#E96FE3']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{ width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Text style={{ fontSize: 28 }}>📸</Text>
-            </LinearGradient>
-            <View className="flex-1">
-              <Text className="text-fg font-semibold text-lg">{t('onboarding.influencer')}</Text>
-              <Text className="text-muted text-sm">{t('onboarding.influencerDesc')}</Text>
+          {/* Influenceur (Phase 2) */}
+          <Pressable onPress={() => router.push('/onboarding/influencer')} className="active:opacity-80">
+            <View className="bg-surface rounded-card p-5 flex-row items-center gap-4 border border-border">
+              <LinearGradient
+                colors={['#7C5CFF', '#E96FE3']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ fontSize: 28 }}>📸</Text>
+              </LinearGradient>
+              <View className="flex-1">
+                <Text className="text-fg font-semibold text-lg">{t('onboarding.influencer')}</Text>
+                <Text className="text-muted text-sm">{t('onboarding.influencerDesc')}</Text>
+              </View>
             </View>
-            <View className="bg-secondary/20 px-3 h-7 rounded-pill items-center justify-center">
-              <Text className="text-secondary text-xs font-semibold">Phase 2</Text>
-            </View>
-          </View>
+          </Pressable>
         </View>
       </View>
     </Screen>

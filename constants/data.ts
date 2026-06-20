@@ -23,6 +23,24 @@ export const GENDERS = ['F', 'M', 'Autre'] as const;
 
 export const AVAILABILITY = ['Semaine', 'Week-end', 'Soirée', 'Flexible'] as const;
 
+// ── Influenceur (Phase 2) ──
+export const NICHES = [
+  'Mode', 'Beauté', 'Food', 'Tech', 'Lifestyle', 'Sport',
+  'Gaming', 'Voyage', 'Fitness', 'Humour', 'Business', 'Famille',
+] as const;
+
+export const DELIVERABLES = ['Post', 'Story', 'Reel', 'Vidéo', 'Live', 'Article'] as const;
+
+export const SOCIAL_NETWORKS = ['Instagram', 'TikTok', 'YouTube', 'Facebook', 'Twitter/X', 'Snapchat'] as const;
+
+// Formate un nombre d'abonnés (12000 → 12 k)
+export function formatFollowers(n?: number | null): string {
+  if (n == null) return '—';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)} k`;
+  return String(n);
+}
+
 export const SECTORS = [
   'Événementiel', 'Marketing', 'Salons & Foires', 'Mode', 'Automobile',
   'Télécom', 'Banque', 'Agroalimentaire', 'Cosmétique', 'Autre',

@@ -105,7 +105,7 @@ function AuthGuard() {
       return;
     }
     // Routes partagées accessibles depuis les deux espaces (chat, détail mission)
-    const shared = group === 'chat' || group === 'mission';
+    const shared = group === 'chat' || group === 'mission' || group === 'engagement' || group === 'verify';
     if (shared) return;
     // Profil prêt → espace correspondant
     if (profile.role === 'talent' && group !== '(talent)') {
@@ -124,6 +124,8 @@ function AuthGuard() {
       <Stack.Screen name="(company)" />
       <Stack.Screen name="chat" />
       <Stack.Screen name="mission" />
+      <Stack.Screen name="engagement" />
+      <Stack.Screen name="verify" />
     </Stack>
   );
 }

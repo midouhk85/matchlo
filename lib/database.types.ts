@@ -341,6 +341,10 @@ export type Database = {
           photo_url: string
           talent_type: Database["public"]["Enums"]["talent_type"]
           wilaya: string
+          niches: string[]
+          social_handles: Json
+          rate_per_post_dzd: number
+          deliverable_types: string[]
         }[]
       }
       get_talent_deck: {
