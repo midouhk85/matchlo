@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* MATCHLO — tokens de charte (mêmes valeurs que le mobile) */
+@theme {
+  --color-bg: #0A1224;
+  --color-surface: #15233D;
+  --color-surfacealt: #1B2C49;
+  --color-edge: #26374F;
+  --color-fg: #FFFFFF;
+  --color-muted: #93A1BA;
+
+  --color-primary: #3B7BF6;
+  --color-primarydark: #2D63D6;
+  --color-secondary: #7C5CFF;
+  --color-success: #22C55E;
+  --color-warning: #F5A623;
+  --color-danger: #F43F5E;
+  --color-gold: #F5C518;
+
+  --color-lightbg: #F4F5F7;
+  --color-lightsurface: #FFFFFF;
+  --color-ink: #0F1B2E;
+  --color-inkmuted: #64748B;
+
+  --radius-card: 20px;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
