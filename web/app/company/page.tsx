@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/useAuth";
+import { usePlatformSettings } from "@/lib/usePlatformSettings";
 import { RoleGate, TopBar, StatCard, Card, Button, Pill } from "@/components/ui";
 
 const DELIVERABLES = ["Post", "Story", "Reel", "Vidéo", "Live"];
@@ -19,8 +20,10 @@ function CompanyDashboard() {
   const [escrows, setEscrows] = useState<Record<string, any>>({});
   const [escrowBusy, setEscrowBusy] = useState<string | null>(null);
   const [escrowDemo, setEscrowDemo] = useState<{ id: string; amount: number } | null>(null);
+  const [escrowRequestSent, setEscrowRequestSent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const { settings: platformSettings } = usePlatformSettings();
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -40,6 +43,15 @@ function CompanyDashboard() {
     setEngagements(e ?? []);
     const { data: esc } = await supabase.from("escrows").select("*").eq("company_id", profile.id);
     setEscrows(Object.fromEntries((esc ?? []).map((x: any) => [x.engagement_id, x])));
+    // Vérifie si une demande d'activation escrow est déjà en cours
+    const { data: sr } = await supabase
+      .from("service_requests")
+      .select("id")
+      .eq("company_id", profile.id)
+      .eq("type", "escrow")
+      .eq("status", "pending")
+      .maybeSingle();
+    setEscrowRequestSent(!!sr);
     setLoading(false);
   }, [profile]);
 
@@ -67,6 +79,13 @@ function CompanyDashboard() {
     setEscrowDemo(null);
     setEscrowBusy(null);
     load();
+  }
+  async function requestEscrowActivation(engagementId: string) {
+    if (!profile || escrowRequestSent) return;
+    setEscrowBusy(engagementId);
+    await supabase.from("service_requests").insert({ company_id: profile.id, type: "escrow" });
+    setEscrowRequestSent(true);
+    setEscrowBusy(null);
   }
 
   const matchableMissions = missions.length;
@@ -163,9 +182,17 @@ function CompanyDashboard() {
                       {esc?.status === "funded" && <Pill color="secondary">🔒 séquestre financé</Pill>}
                       {esc?.status === "released" && <Pill color="success">séquestre libéré</Pill>}
                       {canFund && (
-                        <Button onClick={() => fundEscrow(e.id)} disabled={escrowBusy === e.id}>
-                          {escrowBusy === e.id ? "…" : "🔒 Sécuriser le paiement"}
-                        </Button>
+                        platformSettings.escrow_enabled ? (
+                          <Button onClick={() => fundEscrow(e.id)} disabled={escrowBusy === e.id}>
+                            {escrowBusy === e.id ? "…" : "🔒 Sécuriser le paiement"}
+                          </Button>
+                        ) : escrowRequestSent ? (
+                          <span className="text-xs text-success font-medium">✓ Demande envoyée</span>
+                        ) : (
+                          <Button variant="outline" onClick={() => requestEscrowActivation(e.id)} disabled={escrowBusy === e.id}>
+                            {escrowBusy === e.id ? "…" : "Demander l'activation de l'escrow"}
+                          </Button>
+                        )
                       )}
                       <Pill color={e.status === "completed" ? "success" : e.status === "disputed" ? "danger" : "primary"}>
                         {e.status}

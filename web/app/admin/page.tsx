@@ -21,6 +21,9 @@ function AdminConsole() {
   const [reports, setReports] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
+  const [platformSettings, setPlatformSettings] = useState({ chargily_enabled: false, escrow_enabled: false });
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -70,6 +73,18 @@ function AdminConsole() {
       .order("created_at", { ascending: false });
     setCompanies(co ?? []);
 
+    // ── Paramètres plateforme ──
+    const { data: ps } = await supabase.from("platform_settings").select("chargily_enabled, escrow_enabled").eq("id", 1).single();
+    if (ps) setPlatformSettings(ps as any);
+
+    // ── Demandes d'activation de services ──
+    const { data: sr } = await supabase
+      .from("service_requests")
+      .select("*, company:profiles!service_requests_company_id_fkey(full_name)")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setServiceRequests(sr ?? []);
+
     // ── Analytics ──
     const [{ data: paid }, { data: esc }, { data: engs }, { data: miss }] = await Promise.all([
       supabase.from("payments").select("amount_dzd").eq("status", "paid"),
@@ -97,6 +112,18 @@ function AdminConsole() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function toggleSetting(key: "chargily_enabled" | "escrow_enabled") {
+    setTogglingKey(key);
+    const newVal = !platformSettings[key];
+    await supabase.from("platform_settings").update({ [key]: newVal, updated_at: new Date().toISOString() }).eq("id", 1);
+    setPlatformSettings((s) => ({ ...s, [key]: newVal }));
+    setTogglingKey(null);
+  }
+  async function resolveServiceRequest(id: string) {
+    await supabase.from("service_requests").update({ status: "done", done_at: new Date().toISOString() }).eq("id", id);
+    load();
+  }
 
   async function moderateMatch(id: string, status: "approved" | "rejected") {
     await supabase.from("matches").update({ moderation_status: status }).eq("id", id);
@@ -157,6 +184,47 @@ function AdminConsole() {
               </Card>
             </div>
           </section>
+        )}
+
+        {/* Paramètres de la plateforme */}
+        <section className="flex flex-col gap-3">
+          <h2 className="font-bold text-lg">Paramètres de la plateforme</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <ToggleCard
+              label="Paiements Chargily"
+              description="Permet aux entreprises d'acheter des packs de quotas (annonces urgentes, contacts directs). Désactivé → elles voient un bouton de demande d'activation."
+              enabled={platformSettings.chargily_enabled}
+              busy={togglingKey === "chargily_enabled"}
+              onToggle={() => toggleSetting("chargily_enabled")}
+            />
+            <ToggleCard
+              label="Séquestre (Escrow)"
+              description="Permet de sécuriser les paiements des missions influenceur sous séquestre Chargily. Désactivé → demande d'activation à la place."
+              enabled={platformSettings.escrow_enabled}
+              busy={togglingKey === "escrow_enabled"}
+              onToggle={() => toggleSetting("escrow_enabled")}
+            />
+          </div>
+        </section>
+
+        {/* File : demandes d'activation de services */}
+        {serviceRequests.length > 0 && (
+          <Queue title="Demandes d'activation" empty="" count={serviceRequests.length}>
+            {serviceRequests.map((sr) => (
+              <Card key={sr.id} className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-semibold">{sr.company?.full_name}</div>
+                  <div className="text-muted text-sm">
+                    Demande : <strong>{sr.type === "chargily" ? "Paiements Chargily" : "Séquestre (Escrow)"}</strong>
+                    {" · "}{new Date(sr.created_at).toLocaleDateString("fr-DZ")}
+                  </div>
+                </div>
+                <Button variant="success" onClick={() => resolveServiceRequest(sr.id)}>
+                  Traité
+                </Button>
+              </Card>
+            ))}
+          </Queue>
         )}
 
         {loading ? (
@@ -277,6 +345,46 @@ function Bars({ data, labels }: { data: Record<string, number>; labels?: Record<
         </div>
       ))}
     </div>
+  );
+}
+
+function ToggleCard({
+  label,
+  description,
+  enabled,
+  busy,
+  onToggle,
+}: {
+  label: string;
+  description: string;
+  enabled: boolean;
+  busy: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold">{label}</span>
+        <button
+          onClick={onToggle}
+          disabled={busy}
+          className={`relative inline-flex h-7 w-13 items-center rounded-full transition-colors disabled:opacity-50 focus:outline-none ${enabled ? "bg-success" : "bg-surfacealt border border-edge"}`}
+          style={{ width: 52 }}
+          aria-checked={enabled}
+          role="switch"
+        >
+          <span
+            className={`inline-block h-5 w-5 rounded-full bg-fg shadow transition-transform ${enabled ? "translate-x-7" : "translate-x-1"}`}
+          />
+        </button>
+      </div>
+      <p className="text-muted text-sm">{description}</p>
+      <div className="flex items-center gap-2">
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${enabled ? "bg-success/20 text-success" : "bg-surfacealt text-muted"}`}>
+          {enabled ? "Activé" : "Désactivé"}
+        </span>
+      </div>
+    </Card>
   );
 }
 

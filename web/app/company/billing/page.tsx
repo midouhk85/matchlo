@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/useAuth";
+import { usePlatformSettings } from "@/lib/usePlatformSettings";
 import { RoleGate, TopBar, Card, Button, Pill, StatCard } from "@/components/ui";
 import { PACKS } from "@/lib/packs";
 
@@ -12,11 +13,13 @@ export default function BillingPage() {
 
 function Billing() {
   const { profile } = useAuth();
+  const { settings, loading: settingsLoading } = usePlatformSettings();
   const [company, setCompany] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [demo, setDemo] = useState<{ paymentId: string; label: string } | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
+  const [requestSent, setRequestSent] = useState(false);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -29,6 +32,15 @@ function Billing() {
       .order("created_at", { ascending: false })
       .limit(10);
     setPayments(p ?? []);
+    // Vérifie si une demande d'activation Chargily est déjà en cours
+    const { data: sr } = await supabase
+      .from("service_requests")
+      .select("id")
+      .eq("company_id", profile.id)
+      .eq("type", "chargily")
+      .eq("status", "pending")
+      .maybeSingle();
+    setRequestSent(!!sr);
   }, [profile]);
 
   useEffect(() => {
@@ -45,9 +57,8 @@ function Billing() {
       const { data, error } = await supabase.functions.invoke("chargily-checkout", { body: { packId } });
       if (error) throw error;
       if (data?.checkout_url) {
-        window.location.href = data.checkout_url; // vrai paiement Chargily
+        window.location.href = data.checkout_url;
       } else if (data?.demo) {
-        // Pas de clé Chargily configurée → simulation pour la démo
         setDemo({ paymentId: data.payment_id, label });
       }
     } catch (e: any) {
@@ -65,6 +76,15 @@ function Billing() {
     setBusy(null);
     setBanner("Paiement simulé : quotas crédités.");
     load();
+  }
+
+  async function requestActivation() {
+    if (!profile || requestSent) return;
+    setBusy("request");
+    await supabase.from("service_requests").insert({ company_id: profile.id, type: "chargily" });
+    setRequestSent(true);
+    setBusy(null);
+    setBanner("Votre demande d'activation a été envoyée à l'administrateur.");
   }
 
   const urgent = PACKS.filter((p) => p.quota_type === "urgent");
@@ -94,22 +114,46 @@ function Billing() {
           Google Play.
         </div>
 
-        {/* Mode démo */}
-        {demo && (
-          <div className="bg-warning/15 border border-warning/40 rounded-card p-4 flex items-center justify-between gap-3">
-            <span className="text-sm">
-              Mode démo (aucune clé Chargily) — « {demo.label} ». Simuler un paiement réussi ?
-            </span>
-            <Button variant="success" onClick={simulate} disabled={busy === "sim"}>
-              {busy === "sim" ? "…" : "Simuler le paiement"}
-            </Button>
+        {settingsLoading ? (
+          <p className="text-muted text-sm">Chargement…</p>
+        ) : !settings.chargily_enabled ? (
+          /* ── Service désactivé par l'admin ── */
+          <div className="bg-surfacealt border border-edge rounded-card p-6 flex flex-col gap-4 items-start">
+            <div>
+              <div className="font-semibold text-base">Paiements non disponibles pour le moment</div>
+              <p className="text-muted text-sm mt-1">
+                Le service de paiement Chargily n&apos;est pas encore activé sur cette plateforme.
+                Envoyez une demande à l&apos;administrateur pour l&apos;activer.
+              </p>
+            </div>
+            {requestSent ? (
+              <div className="text-sm text-success font-medium">✓ Demande envoyée — l&apos;administrateur vous contactera.</div>
+            ) : (
+              <Button onClick={requestActivation} disabled={busy === "request"}>
+                {busy === "request" ? "…" : "Demander l'activation des paiements"}
+              </Button>
+            )}
           </div>
+        ) : (
+          /* ── Service actif ── */
+          <>
+            {demo && (
+              <div className="bg-warning/15 border border-warning/40 rounded-card p-4 flex items-center justify-between gap-3">
+                <span className="text-sm">
+                  Mode démo (aucune clé Chargily) — « {demo.label} ». Simuler un paiement réussi ?
+                </span>
+                <Button variant="success" onClick={simulate} disabled={busy === "sim"}>
+                  {busy === "sim" ? "…" : "Simuler le paiement"}
+                </Button>
+              </div>
+            )}
+
+            <PackGroup title="Annonces urgentes" packs={urgent} buy={buy} busy={busy} />
+            <PackGroup title="Contacts directs (sans match)" packs={dm} buy={buy} busy={busy} />
+          </>
         )}
 
-        <PackGroup title="Annonces urgentes" packs={urgent} buy={buy} busy={busy} />
-        <PackGroup title="Contacts directs (sans match)" packs={dm} buy={buy} busy={busy} />
-
-        {/* Historique */}
+        {/* Historique — toujours visible */}
         <section className="flex flex-col gap-3">
           <h2 className="font-bold text-lg">Historique des paiements</h2>
           {payments.length === 0 ? (
